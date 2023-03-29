@@ -18,8 +18,6 @@ SELECT
 	ROUND(((total_deaths / total_cases) * 100), 2) AS percentage_of_death
 FROM
 	covid_deaths
---WHERE
---	location like '%phil%'
 ORDER BY
 	location,
 	date
@@ -42,7 +40,7 @@ ORDER BY
 	date
 
 
--- Looking at Countries wit Highest Infection Rate compared to Population
+-- Looking at Countries with the highest percentage of population infected
 
 SELECT
 	location,
@@ -51,15 +49,13 @@ SELECT
 	MAX(ROUND(((total_cases / population) * 100), 4)) AS percentage_of_population_infected
 FROM
 	covid_deaths
---WHERE
---	location like '%phil%'
 GROUP BY
 	population, location
 ORDER BY
 	percentage_of_population_infected desc
 
 
--- Showing Countries with Highest Death Count per Population
+-- Showing Countries with Highest Death Count per Country
 
 SELECT
 	location,
@@ -119,7 +115,7 @@ ORDER BY
 
 
 -- Global numbers
--- We used the CASE to prevent dividing by zero
+-- We used the CASE to prevent error caused by dividing by zero
 SELECT
     SUM(new_cases) as total_cases,
     SUM(new_deaths) as total_deaths,
@@ -131,24 +127,19 @@ FROM
 	covid_deaths
 WHERE
 	continent != ''
---GROUP BY
---	date
 ORDER BY
 	1, 2
 -----------OR-----------------
 SELECT
     SUM(new_cases) as total_cases,
     SUM(new_deaths) as total_deaths,
-   SUM(new_deaths) / SUM(new_cases)* 100 AS death_percentage
+    SUM(new_deaths) / SUM(new_cases)* 100 AS death_percentage
 FROM
 	covid_deaths
 WHERE
 	continent != ''
---GROUP BY
---	date
 ORDER BY
 	1, 2
-
 
 -- Vaccination trends
 SELECT
@@ -168,7 +159,7 @@ JOIN
 WHERE
 	deaths.continent != ''
 
----------------------------------------------CTE-----------------------------------------------
+---------------------------------------------CTE_VERSION-----------------------------------------------
 -- Create a CTE based on the query above
 
 WITH vac_trends (location, date, population, new_vaccinations, rolling_people_vaccinated)
@@ -198,7 +189,7 @@ FROM
 	vac_trends
 
 
-------------------------------TEMP_TABLE-----------------------------------------------
+------------------------------TEMP_TABLE_VERSION-----------------------------------------------
 DROP TABLE #vac_trends
 -- take note, Ensure data types match between temp table columns and data being inserted.
 CREATE TABLE #vac_trends
@@ -227,6 +218,7 @@ JOIN
 WHERE
 	deaths.continent != ''
 -------------------------------end_of_insert----------------------------------------
+-- Let's query on the created Temp Table
 -- rolling percent vaccinated for each country
 SELECT
 	*,
@@ -235,7 +227,7 @@ FROM
 	#vac_trends
 
 -- Looking at total vaccine administered of every country
-
+-- Querying on the created Temp Table (#percent_vaccinated)
 SELECT 
 	location,
 	MAX(rolling_people_vaccinated) AS total_vaccinations
@@ -246,7 +238,7 @@ GROUP BY
 ORDER BY
 	total_vaccinations desc
 
--- Creating View to store data for later Visualization
+-- Creating a View to store data for later Visualization
 
 CREATE VIEW vaccination_trends
 AS
